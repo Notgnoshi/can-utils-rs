@@ -117,3 +117,26 @@ fn recvmmsg() {
 
     assert_eq!(total, TOTAL_FRAMES);
 }
+
+#[test]
+#[cfg_attr(feature = "ci", ignore = "requires vcan")]
+fn uring() {
+    let vcans = VcanHarness::new(IFACE_COUNT).unwrap();
+    let rx = setup_rx_and_send(vcans.names(), false);
+    let mut backend = UringRecv::new(rx).unwrap();
+
+    let stop = Arc::new(AtomicBool::new(false));
+    let stop2 = stop.clone();
+    let mut count = 0u64;
+
+    let total = backend
+        .run(stop, &mut |_idx, _frame| {
+            count += 1;
+            if count >= TOTAL_FRAMES {
+                stop2.store(true, Ordering::Relaxed);
+            }
+        })
+        .unwrap();
+
+    assert_eq!(total, TOTAL_FRAMES);
+}
