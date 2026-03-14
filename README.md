@@ -1,5 +1,9 @@
 # can-utils-rs
 
+![lint workflow](https://github.com/Notgnoshi/can-utils-rs/actions/workflows/lint.yml/badge.svg?event=push)
+![release workflow](https://github.com/Notgnoshi/can-utils-rs/actions/workflows/release.yml/badge.svg?event=push)
+![code coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/Notgnoshi/55f3f6cae2abdc5d011d907624dfb883/raw/can-utils-rs-coverage.json)
+
 Opinionated rewrites of can-utils in Rust
 
 ## Purpose
