@@ -5,6 +5,10 @@ use vcan_fixture::VcanHarness;
 
 #[ctor::ctor]
 fn setup() {
+    tracing_subscriber::fmt()
+        .with_test_writer()
+        .with_ansi(true)
+        .init();
     vcan_fixture::enter_namespace();
 }
 

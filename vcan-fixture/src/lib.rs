@@ -73,12 +73,12 @@ pub fn enter_namespace() -> bool {
     let ret = unsafe { libc::unshare(libc::CLONE_NEWUSER | libc::CLONE_NEWNET) };
     if ret != 0 {
         let err = io::Error::last_os_error();
-        eprintln!("vcan-fixture: unshare(CLONE_NEWUSER | CLONE_NEWNET) failed: {err}");
+        tracing::error!("unshare(CLONE_NEWUSER | CLONE_NEWNET) failed: {err}");
         return false;
     }
 
     if let Err(e) = write_id_mappings(uid, gid) {
-        eprintln!("vcan-fixture: failed to write id mappings: {e}");
+        tracing::error!("failed to write id mappings: {e}");
         return false;
     }
 
@@ -122,7 +122,7 @@ impl VcanHarness {
         for _ in 0..count {
             let id = NEXT_VCAN_ID.fetch_add(1, Ordering::Relaxed);
             let name = format!("vcan{id}");
-            eprintln!("Creating link {name:?}");
+            tracing::info!(link = %name, "creating vcan link");
             netlink::create_vcan(&name)?;
             names.push(name);
         }
@@ -136,13 +136,13 @@ impl VcanHarness {
 
     /// Bring an interface up by name.
     pub fn set_up(&self, name: &str) -> eyre::Result<()> {
-        eprintln!("Setting link {name:?} up");
+        tracing::info!(link = %name, "setting link up");
         netlink::set_link_up(name)
     }
 
     /// Bring an interface down by name.
     pub fn set_down(&self, name: &str) -> eyre::Result<()> {
-        eprintln!("Setting link {name:?} down");
+        tracing::info!(link = %name, "setting link down");
         netlink::set_link_down(name)
     }
 }
@@ -151,7 +151,7 @@ impl Drop for VcanHarness {
     fn drop(&mut self) {
         for name in &self.names {
             if let Err(e) = netlink::delete_vcan(name) {
-                eprintln!("Failed to delete vcan {name:?}: {e}");
+                tracing::error!(link = %name, "failed to delete vcan: {e}");
             }
         }
     }
@@ -175,6 +175,10 @@ mod tests {
 
     #[ctor::ctor]
     fn setup() {
+        tracing_subscriber::fmt()
+            .with_test_writer()
+            .with_ansi(true)
+            .init();
         enter_namespace();
     }
 
