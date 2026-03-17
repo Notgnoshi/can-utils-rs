@@ -31,7 +31,7 @@ troubleshooting enabler. I'm after a solution with the minimal system performanc
 
 I want a long-running daemon to log all CAN traffic to facilitate future field issues. That means:
 
-* Address claim PGN requests
+* Address claim PGN requests upon startup and rotation
 * Log rotation policy
 * Log retention policy
 * Configuration
@@ -353,6 +353,10 @@ collapses suddenly (large loss %).
 * **x86_64 vs. ARM64.** Benchmarks run on a development workstation. Syscall costs, cache sizes, and
   branch predictor behavior differ on the target ARM64 platform. Use these results for relative
   comparison between backends, not as absolute predictions.
+
+It's technically possible to measure syscalls per thread with `perf_event_open` to setup a counter
+for the `raw_syscalls:sys_enter` tracepoint using the `perf-event` crate, but this doesn't work well
+inside the unshare user namespace without additional orchestration externally.
 
 ## Open questions
 
