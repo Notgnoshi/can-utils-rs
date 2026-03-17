@@ -1,15 +1,16 @@
-# can-utils-rs
+# candemonium
 
-![lint workflow](https://github.com/Notgnoshi/can-utils-rs/actions/workflows/lint.yml/badge.svg?event=push)
-![release workflow](https://github.com/Notgnoshi/can-utils-rs/actions/workflows/release.yml/badge.svg?event=push)
+![lint workflow](https://github.com/Notgnoshi/candemonium/actions/workflows/lint.yml/badge.svg?event=push)
+![release workflow](https://github.com/Notgnoshi/candemonium/actions/workflows/release.yml/badge.svg?event=push)
 ![code coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/Notgnoshi/55f3f6cae2abdc5d011d907624dfb883/raw/can-utils-rs-coverage.json)
 
-Opinionated rewrites of can-utils in Rust
+Opinionated CAN utils written in Rust.
 
 ## Purpose
 
 [can-utils](https://github.com/linux-can/can-utils) is great. I use it _a lot_. This is not a clone
-of can-utils. This is an opinionated rewrite with different capabilities and different constraints.
+of can-utils. This is an opinionated set of tools with different capabilities and different
+constraints.
 
 ## Target environment
 
