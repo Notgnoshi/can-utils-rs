@@ -192,8 +192,7 @@ pub struct RunResult {
     pub rate: u32,
     pub sent: u64,
     pub recv: u64,
-    #[tabled(rename = "loss%")]
-    pub loss_pct: String,
+    pub lost: u64,
     pub user_ms: String,
     pub sys_ms: String,
     pub vol_csw: i64,
@@ -291,18 +290,13 @@ pub fn run_repetitions(
     let recv = runs.iter().map(|r| r.recv).sum::<u64>() / n;
     let user_us = runs.iter().map(|r| r.user_us).sum::<i64>() / ni;
     let sys_us = runs.iter().map(|r| r.sys_us).sum::<i64>() / ni;
-    let loss_pct = if sent > 0 {
-        sent.saturating_sub(recv) as f64 / sent as f64 * 100.0
-    } else {
-        0.0
-    };
     RunResult {
         backend: backend.name,
         ifaces,
         rate,
         sent,
         recv,
-        loss_pct: format!("{loss_pct:.1}"),
+        lost: sent.saturating_sub(recv),
         user_ms: format!("{:.1}", user_us as f64 / 1000.0),
         sys_ms: format!("{:.1}", sys_us as f64 / 1000.0),
         vol_csw: runs.iter().map(|r| r.vol_csw).sum::<i64>() / ni,
