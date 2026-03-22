@@ -63,7 +63,7 @@ fn run_dedicated(sockets: Vec<OwnedFd>, stop: Arc<AtomicBool>, count: &AtomicU64
     let total = backend
         .run_instrumented(
             stop,
-            &|_idx, _frame| {
+            &|_idx, _frame, _meta| {
                 count.fetch_add(1, Ordering::Relaxed);
             },
             &|_idx, inner| {
@@ -81,7 +81,7 @@ fn run_epoll(sockets: Vec<OwnedFd>, stop: Arc<AtomicBool>, count: &AtomicU64) ->
     let mut backend = EpollRecv::new(sockets).unwrap();
     let before = getrusage_thread();
     let total = backend
-        .run(stop, &mut |_idx, _frame| {
+        .run(stop, &mut |_idx, _frame, _meta| {
             count.fetch_add(1, Ordering::Relaxed);
         })
         .unwrap();
@@ -93,7 +93,7 @@ fn run_recvmmsg(sockets: Vec<OwnedFd>, stop: Arc<AtomicBool>, count: &AtomicU64)
     let mut backend = RecvmmsgRecv::new(sockets).unwrap();
     let before = getrusage_thread();
     let total = backend
-        .run(stop, &mut |_idx, _frame| {
+        .run(stop, &mut |_idx, _frame, _meta| {
             count.fetch_add(1, Ordering::Relaxed);
         })
         .unwrap();
@@ -105,7 +105,7 @@ fn run_uring(sockets: Vec<OwnedFd>, stop: Arc<AtomicBool>, count: &AtomicU64) ->
     let mut backend = UringRecv::new(sockets).unwrap();
     let before = getrusage_thread();
     let total = backend
-        .run(stop, &mut |_idx, _frame| {
+        .run(stop, &mut |_idx, _frame, _meta| {
             count.fetch_add(1, Ordering::Relaxed);
         })
         .unwrap();
@@ -121,7 +121,7 @@ fn run_uring_multi(
     let mut backend = UringMultiRecv::new(sockets).unwrap();
     let before = getrusage_thread();
     let total = backend
-        .run(stop, &mut |_idx, _frame| {
+        .run(stop, &mut |_idx, _frame, _meta| {
             count.fetch_add(1, Ordering::Relaxed);
         })
         .unwrap();

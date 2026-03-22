@@ -193,7 +193,7 @@ fn dedicated(fixture: Fixture) -> u64 {
     let stop = make_stop();
     let count = AtomicU64::new(0);
     backend
-        .run(stop, &|_idx, _frame| {
+        .run(stop, &|_idx, _frame, _meta| {
             count.fetch_add(1, Ordering::Relaxed);
         })
         .unwrap()
@@ -206,7 +206,7 @@ fn epoll(fixture: Fixture) -> u64 {
     let stop = make_stop();
     let count = AtomicU64::new(0);
     backend
-        .run(stop, &mut |_idx, _frame| {
+        .run(stop, &mut |_idx, _frame, _meta| {
             count.fetch_add(1, Ordering::Relaxed);
         })
         .unwrap()
@@ -219,7 +219,7 @@ fn recvmmsg(fixture: Fixture) -> u64 {
     let stop = make_stop();
     let count = AtomicU64::new(0);
     backend
-        .run(stop, &mut |_idx, _frame| {
+        .run(stop, &mut |_idx, _frame, _meta| {
             count.fetch_add(1, Ordering::Relaxed);
         })
         .unwrap()
@@ -232,7 +232,7 @@ fn uring(fixture: Fixture) -> u64 {
     let stop = make_stop();
     let count = AtomicU64::new(0);
     backend
-        .run(stop, &mut |_idx, _frame| {
+        .run(stop, &mut |_idx, _frame, _meta| {
             count.fetch_add(1, Ordering::Relaxed);
         })
         .unwrap()
@@ -245,7 +245,7 @@ fn uring_multi(fixture: Fixture) -> u64 {
     let stop = make_stop();
     let count = AtomicU64::new(0);
     backend
-        .run(stop, &mut |_idx, _frame| {
+        .run(stop, &mut |_idx, _frame, _meta| {
             count.fetch_add(1, Ordering::Relaxed);
         })
         .unwrap()

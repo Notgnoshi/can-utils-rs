@@ -5,6 +5,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use crate::can::{CanFrame, FRAME_SIZE};
+use crate::recv::FrameMeta;
 
 /// Receives CAN frames using epoll for readiness notification and `read()` to recv.
 pub struct EpollRecv {
@@ -50,7 +51,7 @@ impl EpollRecv {
     pub fn run(
         &mut self,
         stop: Arc<AtomicBool>,
-        on_frame: &mut dyn FnMut(usize, &CanFrame),
+        on_frame: &mut dyn FnMut(usize, &CanFrame, &FrameMeta),
     ) -> std::io::Result<u64> {
         let mut events = [unsafe { std::mem::zeroed::<libc::epoll_event>() }; 64];
         let mut total = 0u64;
@@ -87,7 +88,7 @@ impl EpollRecv {
                         )
                     };
                     if n == FRAME_SIZE as isize {
-                        on_frame(idx, &frame);
+                        on_frame(idx, &frame, &FrameMeta::default());
                         total += 1;
                     } else if n < 0 {
                         let err = std::io::Error::last_os_error();

@@ -7,6 +7,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use io_uring::{IoUring, opcode, types};
 
 use crate::can::{CanFrame, FRAME_SIZE};
+use crate::recv::FrameMeta;
 
 const TIMEOUT_UD: u64 = u64::MAX;
 
@@ -35,7 +36,7 @@ impl UringRecv {
     pub fn run(
         &mut self,
         stop: Arc<AtomicBool>,
-        on_frame: &mut dyn FnMut(usize, &CanFrame),
+        on_frame: &mut dyn FnMut(usize, &CanFrame, &FrameMeta),
     ) -> std::io::Result<u64> {
         let n = self.sockets.len();
         let mut bufs = vec![[0u8; FRAME_SIZE]; n];
@@ -82,7 +83,7 @@ impl UringRecv {
                     }
                 } else if result == FRAME_SIZE as i32 {
                     let frame = unsafe { *(bufs[idx].as_ptr().cast::<CanFrame>()) };
-                    on_frame(idx, &frame);
+                    on_frame(idx, &frame, &FrameMeta::default());
                     total += 1;
                 }
 

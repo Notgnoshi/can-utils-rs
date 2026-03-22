@@ -106,6 +106,52 @@ pub fn set_recv_buffer(fd: BorrowedFd<'_>, bytes: u32) -> std::io::Result<()> {
     Ok(())
 }
 
+/// Enable receive timestamping on the socket.
+///
+/// Requests hardware timestamps with a software fallback. The kernel delivers
+/// timestamps via `SCM_TIMESTAMPING` cmsg on `recvmsg`.
+pub fn enable_timestamps(fd: BorrowedFd<'_>) -> std::io::Result<()> {
+    let flags: libc::c_uint = libc::SOF_TIMESTAMPING_RX_HARDWARE
+        | libc::SOF_TIMESTAMPING_RAW_HARDWARE
+        | libc::SOF_TIMESTAMPING_RX_SOFTWARE
+        | libc::SOF_TIMESTAMPING_SOFTWARE;
+    let ret = unsafe {
+        libc::setsockopt(
+            fd.as_raw_fd(),
+            libc::SOL_SOCKET,
+            libc::SO_TIMESTAMPING,
+            std::ptr::from_ref(&flags).cast::<libc::c_void>(),
+            std::mem::size_of_val(&flags) as u32,
+        )
+    };
+    if ret != 0 {
+        return Err(std::io::Error::last_os_error());
+    }
+    Ok(())
+}
+
+/// Enable kernel drop count reporting on the socket.
+///
+/// When enabled, the kernel attaches a `u32` drop count to each received
+/// message via `SO_RXQ_OVFL` cmsg on `recvmsg`. The count is cumulative
+/// since socket creation.
+pub fn enable_drop_count(fd: BorrowedFd<'_>) -> std::io::Result<()> {
+    let val: libc::c_int = 1;
+    let ret = unsafe {
+        libc::setsockopt(
+            fd.as_raw_fd(),
+            libc::SOL_SOCKET,
+            libc::SO_RXQ_OVFL,
+            std::ptr::from_ref(&val).cast::<libc::c_void>(),
+            std::mem::size_of_val(&val) as u32,
+        )
+    };
+    if ret != 0 {
+        return Err(std::io::Error::last_os_error());
+    }
+    Ok(())
+}
+
 /// Send a single CAN frame on the socket.
 pub fn send_frame(fd: BorrowedFd<'_>, frame: &CanFrame) -> std::io::Result<()> {
     let written = unsafe {

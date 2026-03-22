@@ -5,6 +5,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use crate::can::{CanFrame, FRAME_SIZE};
+use crate::recv::FrameMeta;
 
 /// Callback that wraps each thread's read loop in
 /// [run_instrumented](DedicatedRecv::run_instrumented).
@@ -36,7 +37,7 @@ impl DedicatedRecv {
     pub fn run(
         self,
         stop: Arc<AtomicBool>,
-        on_frame: &(dyn Fn(usize, &CanFrame) + Send + Sync),
+        on_frame: &(dyn Fn(usize, &CanFrame, &FrameMeta) + Send + Sync),
     ) -> std::io::Result<u64> {
         self.run_instrumented(stop, on_frame, &|_idx, inner| inner())
     }
@@ -49,7 +50,7 @@ impl DedicatedRecv {
     pub fn run_instrumented(
         self,
         stop: Arc<AtomicBool>,
-        on_frame: &(dyn Fn(usize, &CanFrame) + Send + Sync),
+        on_frame: &(dyn Fn(usize, &CanFrame, &FrameMeta) + Send + Sync),
         wrap_thread: &ThreadWrapper<'_>,
     ) -> std::io::Result<u64> {
         // Can't block indefinitely; we need to be able to terminate the threads.
@@ -77,7 +78,7 @@ impl DedicatedRecv {
                                     )
                                 };
                                 if n == FRAME_SIZE as isize {
-                                    on_frame(idx, &frame);
+                                    on_frame(idx, &frame, &FrameMeta::default());
                                     count += 1;
                                 } else if n < 0 {
                                     let err = std::io::Error::last_os_error();

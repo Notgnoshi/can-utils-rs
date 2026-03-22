@@ -62,7 +62,7 @@ fn dedicated() {
     let count = AtomicU64::new(0);
 
     let total = backend
-        .run(stop, &|_idx, _frame| {
+        .run(stop, &|_idx, _frame, _meta| {
             if count.fetch_add(1, Ordering::Relaxed) + 1 >= TOTAL_FRAMES {
                 stop2.store(true, Ordering::Relaxed);
             }
@@ -84,7 +84,7 @@ fn epoll() {
     let mut count = 0u64;
 
     let total = backend
-        .run(stop, &mut |_idx, _frame| {
+        .run(stop, &mut |_idx, _frame, _meta| {
             count += 1;
             if count >= TOTAL_FRAMES {
                 stop2.store(true, Ordering::Relaxed);
@@ -107,7 +107,7 @@ fn recvmmsg() {
     let mut count = 0u64;
 
     let total = backend
-        .run(stop, &mut |_idx, _frame| {
+        .run(stop, &mut |_idx, _frame, _meta| {
             count += 1;
             if count >= TOTAL_FRAMES {
                 stop2.store(true, Ordering::Relaxed);
@@ -130,7 +130,7 @@ fn uring() {
     let mut count = 0u64;
 
     let total = backend
-        .run(stop, &mut |_idx, _frame| {
+        .run(stop, &mut |_idx, _frame, _meta| {
             count += 1;
             if count >= TOTAL_FRAMES {
                 stop2.store(true, Ordering::Relaxed);
@@ -153,7 +153,7 @@ fn uring_multi() {
     let mut count = 0u64;
 
     let total = backend
-        .run(stop, &mut |_idx, _frame| {
+        .run(stop, &mut |_idx, _frame, _meta| {
             count += 1;
             if count >= TOTAL_FRAMES {
                 stop2.store(true, Ordering::Relaxed);
