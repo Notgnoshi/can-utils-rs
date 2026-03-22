@@ -269,8 +269,10 @@ impl UringMultiRecv {
 
 impl Drop for UringMultiRecv {
     fn drop(&mut self) {
-        // The kernel cleans up the buf ring registration when the io_uring fd closes. We just free
-        // our allocation.
+        // Unregister the buffer ring from the kernel before freeing it. Our explicit Drop runs
+        // before field drops, so `self.ring` (IoUring) is still alive here. Without unregistering
+        // first, the kernel might access the freed buffer ring memory during io_uring fd cleanup.
+        let _ = self.ring.submitter().unregister_buf_ring(BGID);
         unsafe {
             std::alloc::dealloc(self.framebuf_ring_ptr, self.framebuf_ring_layout);
         }
