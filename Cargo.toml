@@ -11,7 +11,7 @@ version = "0.1.0-rc0"
 edition = "2024"
 license = "MIT"
 rust-version = "1.89"
-description = "Opinionated CAN utils written in Rust"
+description = "Opinionated CAN utilities written in Rust"
 
 [workspace.dependencies]
 ctor = "0.6"
