@@ -176,6 +176,10 @@ impl UringMultiRecv {
         let framebuf_base = self.framebuf_ring_ptr as *mut BufRingEntry;
         let mask = FRAMEBUF_COUNT - 1;
 
+        // Sockets whose multishot terminated but could not be resubmitted because the SQ was full.
+        // Retried at the top of each loop iteration after submit drains the SQ.
+        let mut pending_resubmit: Vec<usize> = Vec::new();
+
         // Template msghdr for RecvMsgMulti. The kernel uses msg_namelen and msg_controllen to
         // determine the layout within each provided buffer. Must remain at a stable address for
         // the lifetime of the multishot SQEs (i.e., until this function returns).
@@ -201,6 +205,15 @@ impl UringMultiRecv {
                 Err(e) if e.raw_os_error() == Some(libc::EINTR) => continue,
                 Err(e) => return Err(e),
             }
+
+            // Retry any multishot resubmissions that failed on a previous iteration because the
+            // SQ was full. The submit_with_args above drained the SQ, so there should be room now.
+            pending_resubmit.retain(|&idx| {
+                let entry = opcode::RecvMsgMulti::new(types::Fixed(idx as u32), &msghdr, BGID)
+                    .build()
+                    .user_data(idx as u64);
+                unsafe { self.ring.submission().push(&entry) }.is_err()
+            });
 
             // Drain CQEs into a stack buffer, then process. This avoids heap allocation while
             // releasing the borrow on the completion queue before we need to touch the submission
@@ -244,7 +257,9 @@ impl UringMultiRecv {
                     let entry = opcode::RecvMsgMulti::new(types::Fixed(idx as u32), &msghdr, BGID)
                         .build()
                         .user_data(ud);
-                    unsafe { self.ring.submission().push(&entry) }.ok();
+                    if unsafe { self.ring.submission().push(&entry) }.is_err() {
+                        pending_resubmit.push(idx);
+                    }
                 }
             }
         }
