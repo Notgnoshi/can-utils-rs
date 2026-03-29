@@ -197,6 +197,10 @@ fn sender_loop(
         }
         frame_idx += 1;
     }
+    // Let the receiver drain in-flight frames before signaling stop. Several receivers use 100ms
+    // as a timeout to wake themselves up. This isn't a great design, but it's possible to drop
+    // frames, so I can't just say "run until all frames have been received".
+    std::thread::sleep(Duration::from_millis(110));
     stop.store(true, Ordering::Relaxed);
 }
 
