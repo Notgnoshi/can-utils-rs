@@ -8,8 +8,8 @@ use std::os::unix::io::{AsRawFd, BorrowedFd, FromRawFd, OwnedFd};
 
 /// Linux `can_frame`: 16 bytes on the wire.
 #[repr(C)]
-#[derive(Clone, Copy, Default)]
-pub struct CanFrame {
+#[derive(Clone, Copy, Debug, Default)]
+pub struct LinuxCanFrame {
     /// CAN ID with EFF/RTR/ERR flags in the upper bits.
     pub can_id: u32,
     /// Payload length in bytes (0..8).
@@ -21,7 +21,7 @@ pub struct CanFrame {
     pub data: [u8; 8],
 }
 
-impl CanFrame {
+impl LinuxCanFrame {
     /// Create a frame with the given CAN ID and data payload.
     ///
     /// The `len` field is set to `data.len()`. Panics if `data` is longer than 8 bytes.
@@ -41,7 +41,7 @@ impl CanFrame {
 }
 
 /// Size of a single CAN frame in bytes.
-pub const FRAME_SIZE: usize = std::mem::size_of::<CanFrame>();
+pub const FRAME_SIZE: usize = std::mem::size_of::<LinuxCanFrame>();
 const _: () = assert!(FRAME_SIZE == 16);
 
 /// Open a non-blocking `CAN_RAW` socket bound to the named interface.
@@ -153,7 +153,7 @@ pub fn enable_drop_count(fd: BorrowedFd<'_>) -> std::io::Result<()> {
 }
 
 /// Send a single CAN frame on the socket.
-pub fn send_frame(fd: BorrowedFd<'_>, frame: &CanFrame) -> std::io::Result<()> {
+pub fn send_frame(fd: BorrowedFd<'_>, frame: &LinuxCanFrame) -> std::io::Result<()> {
     let written = unsafe {
         libc::write(
             fd.as_raw_fd(),

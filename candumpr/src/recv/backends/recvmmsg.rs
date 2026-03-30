@@ -4,7 +4,7 @@ use std::os::unix::io::{AsRawFd, FromRawFd, OwnedFd};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use crate::can::{CanFrame, FRAME_SIZE};
+use crate::can::{FRAME_SIZE, LinuxCanFrame};
 use crate::recv::FrameMeta;
 
 const BATCH_SIZE: usize = 32;
@@ -53,13 +53,13 @@ impl RecvmmsgRecv {
     pub fn run(
         &mut self,
         stop: Arc<AtomicBool>,
-        on_frame: &mut dyn FnMut(usize, &CanFrame, &FrameMeta),
+        on_frame: &mut dyn FnMut(usize, &LinuxCanFrame, &FrameMeta),
     ) -> std::io::Result<u64> {
         let mut events = [unsafe { std::mem::zeroed::<libc::epoll_event>() }; 64];
         let mut total = 0u64;
 
         // Pre-allocate batch buffers.
-        let mut frames = [CanFrame::default(); BATCH_SIZE];
+        let mut frames = [LinuxCanFrame::default(); BATCH_SIZE];
         let mut iovecs: [libc::iovec; BATCH_SIZE] = unsafe { std::mem::zeroed() };
         let mut msghdrs: [libc::mmsghdr; BATCH_SIZE] = unsafe { std::mem::zeroed() };
 
@@ -87,7 +87,7 @@ impl RecvmmsgRecv {
                 // Drain with recvmmsg in batches.
                 loop {
                     // Zero frames and set up iovecs pointing into them.
-                    frames.fill(CanFrame::default());
+                    frames.fill(LinuxCanFrame::default());
                     for i in 0..BATCH_SIZE {
                         iovecs[i].iov_base =
                             std::ptr::from_mut(&mut frames[i]).cast::<libc::c_void>();

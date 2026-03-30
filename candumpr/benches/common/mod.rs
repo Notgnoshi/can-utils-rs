@@ -3,7 +3,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
-use candumpr::can::{self, CanFrame};
+use candumpr::can::{self, LinuxCanFrame};
 use candumpr::recv::backends::dedicated::DedicatedRecv;
 use candumpr::recv::backends::epoll::EpollRecv;
 use candumpr::recv::backends::recvmmsg::RecvmmsgRecv;
@@ -53,7 +53,7 @@ pub const BACKENDS: &[BackendDef] = &[
 
 // --- Sequence checker ---
 
-fn frame_seq(frame: &CanFrame) -> u32 {
+fn frame_seq(frame: &LinuxCanFrame) -> u32 {
     u32::from_le_bytes([frame.data[0], frame.data[1], frame.data[2], frame.data[3]])
 }
 
@@ -68,7 +68,7 @@ impl SeqCheck {
         }
     }
 
-    fn check(&self, idx: usize, frame: &CanFrame) {
+    fn check(&self, idx: usize, frame: &LinuxCanFrame) {
         let actual = frame_seq(frame);
         let expected = self.expected[idx].load(Ordering::Relaxed);
         if actual != expected {
@@ -204,9 +204,9 @@ fn sender_loop(
     stop.store(true, Ordering::Relaxed);
 }
 
-fn make_frame(iface_idx: usize, frame_idx: u32) -> CanFrame {
+fn make_frame(iface_idx: usize, frame_idx: u32) -> LinuxCanFrame {
     let seq = frame_idx.to_le_bytes();
-    CanFrame::new(
+    LinuxCanFrame::new(
         ((iface_idx as u32) << 8) | (frame_idx & 0xFF) | libc::CAN_EFF_FLAG,
         &[
             seq[0],

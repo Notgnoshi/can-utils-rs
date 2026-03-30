@@ -20,7 +20,7 @@ use std::sync::atomic::{AtomicBool, AtomicU16, Ordering};
 use io_uring::types::BufRingEntry;
 use io_uring::{IoUring, cqueue, opcode, types};
 
-use crate::can::{self, CanFrame, FRAME_SIZE};
+use crate::can::{self, FRAME_SIZE, LinuxCanFrame};
 use crate::recv::{FrameMeta, Timestamp};
 
 /// Number of provided buffers (and CQ entries) in the ring. The CQ is sized to match so the
@@ -163,7 +163,7 @@ impl UringMultiRecv {
     pub fn run(
         &mut self,
         stop: Arc<AtomicBool>,
-        on_frame: &mut dyn FnMut(usize, &CanFrame, &FrameMeta),
+        on_frame: &mut dyn FnMut(usize, &LinuxCanFrame, &FrameMeta),
     ) -> std::io::Result<u64> {
         let mut total = 0u64;
         let timeout = types::Timespec::new().nsec(100_000_000);
@@ -239,7 +239,7 @@ impl UringMultiRecv {
                         let payload = out.payload_data();
                         if payload.len() == FRAME_SIZE {
                             let frame = unsafe {
-                                std::ptr::read_unaligned(payload.as_ptr().cast::<CanFrame>())
+                                std::ptr::read_unaligned(payload.as_ptr().cast::<LinuxCanFrame>())
                             };
                             let meta = parse_control_data(out.control_data());
                             on_frame(idx, &frame, &meta);

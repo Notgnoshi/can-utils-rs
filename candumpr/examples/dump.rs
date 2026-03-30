@@ -5,7 +5,7 @@
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use candumpr::can::{self, CanFrame};
+use candumpr::can::{self, LinuxCanFrame};
 use candumpr::recv::backends::uring_multi::UringMultiRecv;
 
 fn main() -> std::io::Result<()> {
@@ -39,7 +39,7 @@ fn main() -> std::io::Result<()> {
     Ok(())
 }
 
-fn print_frame(idx: usize, frame: &CanFrame) {
+fn print_frame(idx: usize, frame: &LinuxCanFrame) {
     let id = frame.can_id & !libc::CAN_EFF_FLAG & !libc::CAN_RTR_FLAG & !libc::CAN_ERR_FLAG;
 
     print!("{idx} {id:08X} [{}]", frame.len);

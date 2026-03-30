@@ -20,7 +20,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::Duration;
 
-use candumpr::can::{self, CanFrame};
+use candumpr::can::{self, LinuxCanFrame};
 use candumpr::recv::backends::dedicated::DedicatedRecv;
 use candumpr::recv::backends::epoll::EpollRecv;
 use candumpr::recv::backends::recvmmsg::RecvmmsgRecv;
@@ -78,7 +78,7 @@ fn open_and_prefill(names: &[String], blocking: bool) -> Vec<OwnedFd> {
     // replaces the previous hardcoded SK_BUFF_OVERHEAD constant.
     let probe_tx = can::open_can_raw_blocking(&names[0]).unwrap();
     let before = get_rmem_alloc(&rx[0]);
-    let probe = CanFrame::new(libc::CAN_EFF_FLAG, &[0; 8]);
+    let probe = LinuxCanFrame::new(libc::CAN_EFF_FLAG, &[0; 8]);
     can::send_frame(probe_tx.as_fd(), &probe).unwrap();
     let after = get_rmem_alloc(&rx[0]);
     let truesize = (after - before) as usize;
@@ -106,7 +106,7 @@ fn open_and_prefill(names: &[String], blocking: bool) -> Vec<OwnedFd> {
             frames_per_iface + 1
         };
         for frame_idx in 0..count {
-            let frame = CanFrame::new(
+            let frame = LinuxCanFrame::new(
                 ((iface_idx as u32) << 8) | (frame_idx as u32) | libc::CAN_EFF_FLAG,
                 &[
                     iface_idx as u8,

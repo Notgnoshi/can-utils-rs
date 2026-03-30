@@ -4,7 +4,7 @@ use std::os::unix::io::{AsRawFd, FromRawFd, OwnedFd};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use crate::can::{CanFrame, FRAME_SIZE};
+use crate::can::{FRAME_SIZE, LinuxCanFrame};
 use crate::recv::FrameMeta;
 
 /// Receives CAN frames using epoll for readiness notification and `read()` to recv.
@@ -51,7 +51,7 @@ impl EpollRecv {
     pub fn run(
         &mut self,
         stop: Arc<AtomicBool>,
-        on_frame: &mut dyn FnMut(usize, &CanFrame, &FrameMeta),
+        on_frame: &mut dyn FnMut(usize, &LinuxCanFrame, &FrameMeta),
     ) -> std::io::Result<u64> {
         let mut events = [unsafe { std::mem::zeroed::<libc::epoll_event>() }; 64];
         let mut total = 0u64;
@@ -79,7 +79,7 @@ impl EpollRecv {
 
                 // Drain all available frames from this socket.
                 loop {
-                    let mut frame = CanFrame::default();
+                    let mut frame = LinuxCanFrame::default();
                     let n = unsafe {
                         libc::read(
                             sock_fd,
