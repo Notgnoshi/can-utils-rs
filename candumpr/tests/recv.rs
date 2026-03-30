@@ -1,13 +1,15 @@
+#![cfg(feature = "bench")]
+
 use std::os::unix::io::{AsFd, OwnedFd};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
-use candumpr::can::{self, CanFrame};
-use candumpr::recv::dedicated::DedicatedRecv;
-use candumpr::recv::epoll::EpollRecv;
-use candumpr::recv::recvmmsg::RecvmmsgRecv;
-use candumpr::recv::uring::UringRecv;
-use candumpr::recv::uring_multi::UringMultiRecv;
+use candumpr::can::{self, LinuxCanFrame};
+use candumpr::recv::backends::dedicated::DedicatedRecv;
+use candumpr::recv::backends::epoll::EpollRecv;
+use candumpr::recv::backends::recvmmsg::RecvmmsgRecv;
+use candumpr::recv::backends::uring::UringRecv;
+use candumpr::recv::backends::uring_multi::UringMultiRecv;
 use vcan_fixture::VcanHarness;
 
 #[ctor::ctor]
@@ -39,7 +41,7 @@ fn setup_rx_and_send(names: &[String], blocking: bool) -> Vec<OwnedFd> {
     for (iface_idx, name) in names.iter().enumerate() {
         let tx = can::open_can_raw_blocking(name).unwrap();
         for frame_idx in 0..FRAMES_PER_IFACE {
-            let frame = CanFrame::new(
+            let frame = LinuxCanFrame::new(
                 ((iface_idx as u32) << 8) | (frame_idx as u32) | libc::CAN_EFF_FLAG,
                 &[iface_idx as u8, frame_idx as u8],
             );

@@ -1,6 +1,6 @@
 use std::os::unix::io::AsFd;
 
-use candumpr::can::{self, CanFrame};
+use candumpr::can::{self, LinuxCanFrame};
 use vcan_fixture::VcanHarness;
 
 #[ctor::ctor]
@@ -26,14 +26,14 @@ fn recv_frames_from_multiple_interfaces() {
 
         // Use a different source address per interface so we can verify which frame we got.
         let sa = i as u8;
-        let frame = CanFrame::new(
+        let frame = LinuxCanFrame::new(
             0x18FECA00 | (sa as u32) | libc::CAN_EFF_FLAG,
             &[0xAA, 0xBB, sa],
         );
 
         can::send_frame(tx.as_fd(), &frame).unwrap();
 
-        let mut recv_frame = CanFrame::default();
+        let mut recv_frame = LinuxCanFrame::default();
         let read = unsafe {
             libc::read(
                 std::os::unix::io::AsRawFd::as_raw_fd(&rx),

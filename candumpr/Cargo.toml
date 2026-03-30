@@ -7,29 +7,40 @@ rust-version.workspace = true
 description = "Log CAN traffic from multiple networks"
 
 [features]
+bench = []
 ci = []
 
 [dependencies]
+clap.workspace = true
+color-eyre.workspace = true
 eyre.workspace = true
 io-uring.workspace = true
 libc.workspace = true
 tracing.workspace = true
+tracing-subscriber.workspace = true
 
 [dev-dependencies]
 ctor.workspace = true
 gungraun.workspace = true
+pretty_assertions.workspace = true
 tabled.workspace = true
-tracing-subscriber.workspace = true
 vcan-fixture = { path = "../vcan-fixture" }
+
+[[example]]
+name = "dump"
+required-features = ["bench"]
 
 [[bench]]
 name = "recv_cost"
 harness = false
+required-features = ["bench"]
 
 [[bench]]
 name = "recv_impact"
 harness = false
+required-features = ["bench"]
 
 [[bench]]
 name = "recv_contention"
 harness = false
+required-features = ["bench"]

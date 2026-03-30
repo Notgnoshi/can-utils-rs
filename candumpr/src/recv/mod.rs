@@ -1,8 +1,6 @@
-pub mod dedicated;
-pub mod epoll;
-pub mod recvmmsg;
-pub mod uring;
-pub mod uring_multi;
+#[cfg(any(test, feature = "bench"))]
+pub mod backends;
+pub mod receiver;
 
 /// Per-frame metadata delivered alongside the CAN frame.
 ///

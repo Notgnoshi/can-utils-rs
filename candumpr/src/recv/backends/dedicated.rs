@@ -4,7 +4,7 @@ use std::os::unix::io::{AsRawFd, OwnedFd};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use crate::can::{CanFrame, FRAME_SIZE};
+use crate::can::{FRAME_SIZE, LinuxCanFrame};
 use crate::recv::FrameMeta;
 
 /// Callback that wraps each thread's read loop in
@@ -37,7 +37,7 @@ impl DedicatedRecv {
     pub fn run(
         self,
         stop: Arc<AtomicBool>,
-        on_frame: &(dyn Fn(usize, &CanFrame, &FrameMeta) + Send + Sync),
+        on_frame: &(dyn Fn(usize, &LinuxCanFrame, &FrameMeta) + Send + Sync),
     ) -> std::io::Result<u64> {
         self.run_instrumented(stop, on_frame, &|_idx, inner| inner())
     }
@@ -50,7 +50,7 @@ impl DedicatedRecv {
     pub fn run_instrumented(
         self,
         stop: Arc<AtomicBool>,
-        on_frame: &(dyn Fn(usize, &CanFrame, &FrameMeta) + Send + Sync),
+        on_frame: &(dyn Fn(usize, &LinuxCanFrame, &FrameMeta) + Send + Sync),
         wrap_thread: &ThreadWrapper<'_>,
     ) -> std::io::Result<u64> {
         // Can't block indefinitely; we need to be able to terminate the threads.
@@ -69,7 +69,7 @@ impl DedicatedRecv {
                         wrap_thread(idx, &mut || {
                             let mut count = 0u64;
                             while !stop.load(Ordering::Relaxed) {
-                                let mut frame = CanFrame::default();
+                                let mut frame = LinuxCanFrame::default();
                                 let n = unsafe {
                                     libc::read(
                                         fd.as_raw_fd(),

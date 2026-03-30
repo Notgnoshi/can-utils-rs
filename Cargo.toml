@@ -7,7 +7,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.1.0-rc0"
+version = "0.1.0-rc1"
 edition = "2024"
 license = "MIT"
 rust-version = "1.89"
@@ -15,12 +15,15 @@ description = "Opinionated CAN utilities written in Rust"
 
 [workspace.dependencies]
 assert_cmd = { version = "2.2.0", features = ["color-auto"] }
+clap = { version = "4", features = ["derive"] }
+color-eyre = "0.6"
 ctor = "0.6"
 eyre = "0.6"
 gungraun = "0.17"
 io-uring = "0.7"
 libc = "0.2"
 neli = "0.7"
+pretty_assertions = "1"
 tabled = "0.18"
 tempfile = "3.27.0"
 tracing = "0.1"
