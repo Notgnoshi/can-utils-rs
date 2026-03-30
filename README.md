@@ -4,7 +4,7 @@
 ![release workflow](https://github.com/Notgnoshi/candemonium/actions/workflows/release.yml/badge.svg?event=push)
 ![code coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/Notgnoshi/55f3f6cae2abdc5d011d907624dfb883/raw/can-utils-rs-coverage.json)
 
-Opinionated CAN utils written in Rust.
+Opinionated CAN utilties written in Rust.
 
 ## Purpose
 
@@ -16,3 +16,9 @@ constraints.
 
 A modern-ish Linux with io_uring and socketcan available. A ~4 core ~1GHz arm64 CPU with 1GB memory
 and 4+ J1939 CAN networks.
+
+## Documentation
+
+* See [quickstart.md](/docs/developer/quickstart.md) for a developer quickstart
+* See `docs/design/` for design documents
+* See `docs/user/` for user documentation

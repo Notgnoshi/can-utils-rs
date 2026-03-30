@@ -49,6 +49,7 @@
 //! available by default.
 
 pub mod bench;
+pub mod cmd;
 mod netlink;
 
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
