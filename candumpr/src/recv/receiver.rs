@@ -1,6 +1,5 @@
 use std::alloc::Layout;
 use std::os::unix::io::{AsFd, AsRawFd, OwnedFd, RawFd};
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicU16, Ordering};
 
 use io_uring::types::BufRingEntry;
@@ -118,7 +117,7 @@ impl Receiver {
     /// number of frames received.
     pub fn run(
         &mut self,
-        stop: Arc<AtomicBool>,
+        stop: &AtomicBool,
         tx: &std::sync::mpsc::Sender<CanFrame>,
     ) -> std::io::Result<u64> {
         let mut total = 0u64;
@@ -303,7 +302,7 @@ fn parse_control_data(control: &[u8]) -> FrameMeta {
 mod tests {
     use std::os::unix::io::AsFd;
     use std::sync::atomic::{AtomicBool, Ordering};
-    use std::sync::{Arc, mpsc};
+    use std::sync::mpsc;
 
     use super::Receiver;
     use crate::can::{self, LinuxCanFrame};
@@ -336,14 +335,14 @@ mod tests {
             }
         }
 
-        let stop = Arc::new(AtomicBool::new(false));
-        let stop2 = stop.clone();
+        static STOP: AtomicBool = AtomicBool::new(false);
+        STOP.store(false, Ordering::Relaxed);
         let (tx, rx_chan) = mpsc::channel();
 
         // Receiver must be created on the same thread that calls run() due to SINGLE_ISSUER.
         let handle = std::thread::spawn(move || {
             let mut recv = Receiver::new(rx_sockets).unwrap();
-            recv.run(stop2, &tx)
+            recv.run(&STOP, &tx)
         });
 
         let mut count = 0u64;
@@ -357,7 +356,7 @@ mod tests {
             count += 1;
         }
 
-        stop.store(true, Ordering::Relaxed);
+        STOP.store(true, Ordering::Relaxed);
         let total = handle.join().unwrap().unwrap();
         assert_eq!(total, TOTAL_FRAMES);
     }

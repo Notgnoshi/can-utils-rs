@@ -33,3 +33,9 @@ impl Writer for StdoutWriter {
         Ok(())
     }
 }
+
+impl Drop for StdoutWriter {
+    fn drop(&mut self) {
+        let _ = self.inner.flush();
+    }
+}
