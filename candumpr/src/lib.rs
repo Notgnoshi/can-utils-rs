@@ -2,6 +2,7 @@ pub mod can;
 pub mod format;
 pub mod frame;
 pub mod recv;
+pub mod write;
 
 #[cfg(test)]
 #[ctor::ctor]
