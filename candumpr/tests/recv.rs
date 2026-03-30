@@ -1,13 +1,15 @@
+#![cfg(feature = "bench")]
+
 use std::os::unix::io::{AsFd, OwnedFd};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
 use candumpr::can::{self, CanFrame};
-use candumpr::recv::dedicated::DedicatedRecv;
-use candumpr::recv::epoll::EpollRecv;
-use candumpr::recv::recvmmsg::RecvmmsgRecv;
-use candumpr::recv::uring::UringRecv;
-use candumpr::recv::uring_multi::UringMultiRecv;
+use candumpr::recv::backends::dedicated::DedicatedRecv;
+use candumpr::recv::backends::epoll::EpollRecv;
+use candumpr::recv::backends::recvmmsg::RecvmmsgRecv;
+use candumpr::recv::backends::uring::UringRecv;
+use candumpr::recv::backends::uring_multi::UringMultiRecv;
 use vcan_fixture::VcanHarness;
 
 #[ctor::ctor]

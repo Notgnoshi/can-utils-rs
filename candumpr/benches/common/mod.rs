@@ -4,11 +4,11 @@ use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
 use candumpr::can::{self, CanFrame};
-use candumpr::recv::dedicated::DedicatedRecv;
-use candumpr::recv::epoll::EpollRecv;
-use candumpr::recv::recvmmsg::RecvmmsgRecv;
-use candumpr::recv::uring::UringRecv;
-use candumpr::recv::uring_multi::UringMultiRecv;
+use candumpr::recv::backends::dedicated::DedicatedRecv;
+use candumpr::recv::backends::epoll::EpollRecv;
+use candumpr::recv::backends::recvmmsg::RecvmmsgRecv;
+use candumpr::recv::backends::uring::UringRecv;
+use candumpr::recv::backends::uring_multi::UringMultiRecv;
 use tabled::Tabled;
 use vcan_fixture::VcanHarness;
 use vcan_fixture::bench::{Rusage, getrusage_thread};

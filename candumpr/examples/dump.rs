@@ -6,7 +6,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use candumpr::can::{self, CanFrame};
-use candumpr::recv::uring_multi::UringMultiRecv;
+use candumpr::recv::backends::uring_multi::UringMultiRecv;
 
 fn main() -> std::io::Result<()> {
     tracing_subscriber::fmt()
